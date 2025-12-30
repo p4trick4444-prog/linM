@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>朕天下 塞林老師專屬</title>
+
+<style>
+body{
+    margin:0;
+    padding:0 10px 90px;
+    background:#000;
+    color:#fff;
+    font-family:"Microsoft JhengHei",Arial
+}
+#bgCanvas{
+    position:fixed;
+    inset:0;
+    z-index:-2
+}
+
+/* Header */
+.header{
+    position:fixed;
+    top:6px;
+    left:0;
+    right:0;
+    z-index:999;
+    pointer-events:none
+}
+.logo{
+    position:absolute;
+    animation:float 3s ease-in-out infinite alternate
+}
+#logoLeft{left:8px;width:150px}
+#logoRight{right:8px;width:80px}
+@keyframes float{
+    50%{transform:translateY(-4px)}
+}
+
+/* Main */
+.container{
+    max-width:420px;
+    margin:92px auto 0;
+    text-align:center
+}
+h1{
+    font-size:18px;
+    margin-bottom:10px;
+    color:#ffd700
+}
+.toggle{
+    width:140px;
+    margin:0 auto 12px;
+    padding:8px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:bold;
+    background:#ffd700;
+    color:#000
+}
+
+/* Loading */
+#dataPanel{
+    display:none;
+    margin-top:10px;
+    font-size:11px;
+    font-family:Consolas;
+    background:rgba(0,0,0,.6);
+    padding:10px
+}
+#progressContainer{
+    display:none;
+    width:90%;
+    height:10px;
+    margin:8px auto;
+    background:rgba(255,255,255,.2);
+    border-radius:10px;
+    overflow:hidden
+}
+#progressBar{
+    height:100%;
+    background:linear-gradient(90deg,#ffd700,#ff9800)
+}
+
+/* Slots */
+.slot-container{
+    display:none;
+    grid-template-columns:1fr;
+    gap:10px;
+    margin-top:16px
+}
+.slot{
+    padding:10px 14px;
+    border-radius:12px;
+    background:rgba(0,0,0,.82);
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+    opacity:0;
+    transform:translateY(8px);
+    transition:.35s
+}
+.slot.show{
+    opacity:1;
+    transform:none
+}
+@keyframes mega{
+    50%{
+        transform:scale(1.06);
+        filter:saturate(1.9)
+    }
+}
+</style>
+</head>
+
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<div class="header">
+    <img src="logo.png" class="logo" id="logoLeft">
+    <img src="logo2.png" class="logo" id="logoRight">
+</div>
+
+<div class="container">
+    <h1 id="title"></h1>
+    <div class="toggle" id="toggle" onclick="switchMode()"></div>
+
+    <div id="dataPanel"></div>
+    <div id="progressContainer"><div id="progressBar"></div></div>
+    <div id="slots" class="slot-container"></div>
+</div>
+
+<script>
+/* ===== 背景：金幣 / 鈔票掉落（只換視覺） ===== */
+const c = bgCanvas;
+const ctx = c.getContext("2d");
+let items = [];
+let mode = "I";
+
+function resize(){
+    c.width = innerWidth;
+    c.height = innerHeight;
+}
+resize();
+onresize = resize;
+
+function renderEmoji(e){
+    const cc = document.createElement("canvas");
+    cc.width = cc.height = 64;
+    const x = cc.getContext("2d");
+    x.font = "48px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'";
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.fillText(e, 32, 32);
+    return cc;
+}
+
+const coinImg = renderEmoji("🪙");
+const billImg = renderEmoji("💶");
+
+function spawn(){
+    items.push({
+        x: Math.random() * c.width,
+        y: -40,
+        v: 3 + Math.random() * 3,
+        img: mode === "I" ? coinImg : billImg
+    });
+}
+
+function drawBg(){
+    ctx.clearRect(0,0,c.width,c.height);
+    items.forEach(i=>{
+        ctx.drawImage(i.img, i.x, i.y, 34, 34);
+        i.y += i.v;
+    });
+    items = items.filter(i => i.y < c.height + 50);
+    if(Math.random() > 0.6) spawn();
+    requestAnimationFrame(drawBg);
+}
+drawBg();
+
+/* ===== App（邏輯完全不動） ===== */
+const titleEl = title;
+const toggleEl = toggle;
+const dp = dataPanel;
+const slotsEl = slots;
+const bar = progressBar;
+const pc = progressContainer;
+
+function apply(){
+    titleEl.textContent = "朕天下 塞林老師專屬｜賽特 I / II 爆分選房系統";
+    toggleEl.textContent = mode === "I" ? "MODE I" : "MODE II";
+}
+
+async function fakeLoad(){
+    dp.style.display = pc.style.display = "block";
+    dp.innerHTML = "";
+    bar.style.width = "0%";
+
+    const lines = [
+        "∑(xᵢ² − μ) / σ → ∞",
+        "limₙ→∞ P(burstₙ)",
+        "∫ Awakening · Chaos dx",
+        "Σ RandomWeight ≠ 0",
+        "f(room) → MAX"
+    ];
+
+    let p = 0;
+    for(let t of lines){
+        let d = document.createElement("div");
+        dp.appendChild(d);
+        await new Promise(r => (function step(){
+            p += Math.random() * 8;
+            if(p > 100) p = 100;
+            d.textContent = t;
+            bar.style.width = p + "%";
+            p < 100 ? requestAnimationFrame(step) : setTimeout(r,120);
+        })());
+    }
+}
+
+function gen(){
+    let a = [];
+    for(let i=0;i<2;i++) a.push({t:"top",p:88+Math.random()*6|0});
+    for(let i=0;i<6;i++) a.push({t:"n",p:55+Math.random()*25|0});
+    return a.sort(()=>Math.random()-.5);
+}
+
+async function refresh(){
+    slotsEl.style.display = "none";
+    await fakeLoad();
+    dp.style.display = pc.style.display = "none";
+    slotsEl.innerHTML = "";
+    slotsEl.style.display = "grid";
+
+    gen().forEach((d,i)=>{
+        let s = document.createElement("div");
+        s.className = "slot";
+        if(d.t === "top"){
+            s.style.color = "#ffd700";
+            s.style.boxShadow = "0 0 18px gold";
+            s.style.animation = "mega 1.8s infinite";
+        }
+        s.innerHTML = `<span>第 ${Math.random()*3000|0} 房</span><span>${d.p}%</span>`;
+        slotsEl.appendChild(s);
+        setTimeout(()=>s.classList.add("show"), i*60);
+    });
+}
+
+function switchMode(){
+    mode = mode === "I" ? "II" : "I";
+    items = [];
+    apply();
+    refresh();
+}
+
+apply();
+refresh();
+</script>
+</body>
+</html>
