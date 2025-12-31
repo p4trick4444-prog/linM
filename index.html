@@ -132,7 +132,7 @@ h1{
 </div>
 
 <script>
-/* ===== 背景：金幣 / 鈔票掉落（只換視覺） ===== */
+/* ===== 背景：金幣 / 綠鈔票掉落（不使用鈔票 Emoji） ===== */
 const c = bgCanvas;
 const ctx = c.getContext("2d");
 let items = [];
@@ -145,19 +145,44 @@ function resize(){
 resize();
 onresize = resize;
 
-function renderEmoji(e){
-    const cc = document.createElement("canvas");
-    cc.width = cc.height = 64;
-    const x = cc.getContext("2d");
-    x.font = "48px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'";
-    x.textAlign = "center";
-    x.textBaseline = "middle";
-    x.fillText(e, 32, 32);
+/* 金幣（Emoji OK） */
+function renderCoin(){
+    const cc=document.createElement("canvas");
+    cc.width=cc.height=64;
+    const x=cc.getContext("2d");
+    x.font="48px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'";
+    x.textAlign="center";
+    x.textBaseline="middle";
+    x.fillText("🪙",32,32);
     return cc;
 }
 
-const coinImg = renderEmoji("🪙");
-const billImg = renderEmoji("💶");
+/* 綠鈔票（自己畫，手機一定不跑色） */
+function renderBill(){
+    const cc=document.createElement("canvas");
+    cc.width=cc.height=64;
+    const x=cc.getContext("2d");
+
+    // 底色
+    x.fillStyle="#1fa85b";
+    x.fillRect(6,18,52,28);
+
+    // 邊框
+    x.strokeStyle="#b6ffd8";
+    x.lineWidth=2;
+    x.strokeRect(6,18,52,28);
+
+    // 中央圓
+    x.strokeStyle="#eafff3";
+    x.beginPath();
+    x.arc(32,32,7,0,Math.PI*2);
+    x.stroke();
+
+    return cc;
+}
+
+const coinImg = renderCoin();
+const billImg = renderBill();
 
 function spawn(){
     items.push({
@@ -171,16 +196,16 @@ function spawn(){
 function drawBg(){
     ctx.clearRect(0,0,c.width,c.height);
     items.forEach(i=>{
-        ctx.drawImage(i.img, i.x, i.y, 34, 34);
+        ctx.drawImage(i.img, i.x, i.y, 36, 36);
         i.y += i.v;
     });
     items = items.filter(i => i.y < c.height + 50);
-    if(Math.random() > 0.6) spawn();
+    if(Math.random() > 0.55) spawn();
     requestAnimationFrame(drawBg);
 }
 drawBg();
 
-/* ===== App（邏輯完全不動） ===== */
+/* ===== App 主邏輯（完全沿用，不改行為） ===== */
 const titleEl = title;
 const toggleEl = toggle;
 const dp = dataPanel;
